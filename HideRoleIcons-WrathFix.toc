@@ -1,0 +1,8 @@
+## Interface: 30401
+## Title: HideRoleIcons-WrathFix
+## Notes: Hides the Role Icons on raid frames.
+## Author: Erniaa
+## Version: 1.0.0
+## DefaultState: enabled
+
+HideRoleIcons-WrathFix.lua

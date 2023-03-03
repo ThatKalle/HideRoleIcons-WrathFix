@@ -1,0 +1,19 @@
+name: WoW Lua Lint
+
+on:
+  pull_request:
+    paths:
+      - '**.lua'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: WoW Lua Lint
+        uses: davidcraig/action-wow-lint@v1.0.1
+        with:
+          path-to-files: ./HideRoleIcons-WrathFix.lua

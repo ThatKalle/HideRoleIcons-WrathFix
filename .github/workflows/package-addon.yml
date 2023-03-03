@@ -1,0 +1,54 @@
+name: Package World of Warcraft addon
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Addon version'
+        required: true
+
+env:
+  WRATH_VERSION: 30401
+
+jobs:
+  package:
+    name: Create zips and tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Get name of addon
+      id: init
+      run: |
+        addon_name=$(ls *.toc)
+        addon_name=$(basename $addon_name .toc)
+        tag_name=${addon_name}-${{github.event.inputs.version}}
+        echo "addon_name=${addon_name}" >> $GITHUB_OUTPUT
+        echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
+
+    - name: Make folder for zips
+      run: |
+        mkdir -p .releases/${{steps.init.outputs.addon_name}}
+        rsync -r --exclude '.*' . .releases/${{steps.init.outputs.addon_name}}
+
+    - name: Create mainline zip
+      run: |
+        cd .releases
+        zip -9 -r ${{steps.init.outputs.tag_name}}.zip ${{steps.init.outputs.addon_name}} -x *.git*
+        cd ..
+
+    - name: Tag and Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{steps.init.outputs.tag_name}}
+        name: ${{steps.init.outputs.addon_name}} ${{github.event.inputs.version}}
+        body: ${{steps.init.outputs.addon_name}} ${{github.event.inputs.version}}
+        draft: false
+        prerelease: false
+        files: .releases/${{steps.init.outputs.tag_name}}.zip
